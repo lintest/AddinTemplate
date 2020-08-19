@@ -21,7 +21,9 @@ using CompFunction = std::function<AddInNative*()>;
 
 using PropFunction = std::function<bool(tVariant*)>;
 
-using MethFunction = std::function<bool(tVariant*, std::vector<tVariant*>)>;
+using FuncFunction = std::function<bool(tVariant*, std::vector<tVariant*>)>;
+
+using ProcFunction = std::function<bool(std::vector<tVariant*>)>;
 
 class AddInNative : public IComponentBase
 {
@@ -36,7 +38,8 @@ private:
 	class Meth {
 	public:
 		std::vector<std::u16string> names;
-		MethFunction handler;
+		FuncFunction func;
+		ProcFunction proc;
 	};
 
 	static std::map<std::u16string, CompFunction> components;
@@ -46,8 +49,10 @@ private:
 
 protected:
 	bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) const;
-	void AddMethod(const std::vector<std::u16string>& names, MethFunction handler);
-	void AddMethod(const std::u16string& nameEn, const std::u16string& nameRu, MethFunction handler);
+	void AddMethod(const std::vector<std::u16string>& names, FuncFunction handler);
+	void AddMethod(const std::vector<std::u16string>& names, ProcFunction handler);
+	void AddMethod(const std::u16string& nameEn, const std::u16string& nameRu, FuncFunction handler);
+	void AddMethod(const std::u16string& nameEn, const std::u16string& nameRu, ProcFunction handler);
 	void AddProperty(const std::vector<std::u16string>& names, PropFunction getter, PropFunction setter = nullptr);
 	void AddProperty(const std::u16string& nameEn, const std::u16string& nameRu, PropFunction getter, PropFunction setter = nullptr);
 	static std::u16string AddComponent(const std::u16string& name, CompFunction creator);

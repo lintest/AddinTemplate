@@ -116,7 +116,7 @@ bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 	auto it = std::next(properties.begin(), lPropNum);
 	if (it == properties.end()) return false;
 	try {
-		return it->getter(pvarPropVal);
+		return it->getter && it->getter(pvarPropVal);
 	}
 	catch (...) {
 		return false;
@@ -128,7 +128,7 @@ bool AddInNative::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
 	auto it = std::next(properties.begin(), lPropNum);
 	if (it == properties.end()) return false;
 	try {
-		return it->setter(pvarPropVal);
+		return it->setter && it->setter(pvarPropVal);
 	}
 	catch (...) {
 		return false;
@@ -151,18 +151,27 @@ bool AddInNative::IsPropWritable(const long lPropNum)
 
 long AddInNative::GetNMethods()
 {
-	return 0;
+	return methods.size();
 }
 
 long AddInNative::FindMethod(const WCHAR_T* wsMethodName)
 {
+	std::u16string name((char16_t*)wsMethodName);
+	for (auto it = methods.begin(); it != methods.end(); it++) {
+		for (auto n = it->names.begin(); n != it->names.end(); n++) {
+			if (n->compare(name) == 0) return long(it - methods.begin());
+		}
+	}
 	return -1;
 }
 
-const WCHAR_T* AddInNative::GetMethodName(const long lMethodNum,
-	const long lMethodAlias)
+const WCHAR_T* AddInNative::GetMethodName(const long lMethodNum, const long lMethodAlias)
 {
-	return 0;
+	auto it = std::next(methods.begin(), lMethodNum);
+	if (it == methods.end()) return nullptr;
+	auto nm = std::next(it->names.begin(), lMethodAlias);
+	if (nm == it->names.end()) return nullptr;
+	return W(nm->c_str());
 }
 
 long AddInNative::GetNParams(const long lMethodNum)
@@ -177,16 +186,38 @@ bool AddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, 
 
 bool AddInNative::HasRetVal(const long lMethodNum)
 {
-	return false;
+	auto it = std::next(methods.begin(), lMethodNum);
+	if (it == methods.end()) return false;
+	return (bool)it->func;
 }
 
 bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
 {
+	auto it = std::next(methods.begin(), lMethodNum);
+	if (it == methods.end()) return false;
+	try {
+		std::vector<tVariant*> params;
+		for (long i = 0; i < lSizeArray; i++) params.push_back(paParams++);
+		return it->proc && it->proc(params);
+	}
+	catch (...) {
+		return false;
+	}
 	return false;
 }
 
 bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
+	auto it = std::next(methods.begin(), lMethodNum);
+	if (it == methods.end()) return false;
+	try {
+		std::vector<tVariant*> params;
+		for (long i = 0; i < lSizeArray; i++) params.push_back(paParams++);
+		return it->func && it->func(pvarRetValue, params);
+	}
+	catch (...) {
+		return false;
+	}
 	return false;
 }
 
@@ -235,14 +266,24 @@ void AddInNative::AddProperty(const std::u16string& nameEn, const std::u16string
 	properties.push_back({ { nameRu, nameEn }, getter, setter });
 }
 
-void AddInNative::AddMethod(const std::vector<std::u16string>& names, MethFunction handler)
+void AddInNative::AddMethod(const std::vector<std::u16string>& names, FuncFunction handler)
 {
-	methods.push_back({ names, handler });
+	methods.push_back({ names, handler, nullptr });
 }
 
-void AddInNative::AddMethod(const std::u16string& nameEn, const std::u16string& nameRu, MethFunction handler)
+void AddInNative::AddMethod(const std::vector<std::u16string>& names, ProcFunction handler)
 {
-	methods.push_back({ { nameRu, nameEn }, handler });
+	methods.push_back({ names, nullptr, handler });
+}
+
+void AddInNative::AddMethod(const std::u16string& nameEn, const std::u16string& nameRu, FuncFunction handler)
+{
+	methods.push_back({ { nameRu, nameEn }, handler, nullptr });
+}
+
+void AddInNative::AddMethod(const std::u16string& nameEn, const std::u16string& nameRu, ProcFunction handler)
+{
+	methods.push_back({ { nameRu, nameEn }, nullptr, handler });
 }
 
 bool ADDIN_API AddInNative::AllocMemory(void** pMemory, unsigned long ulCountByte) const
