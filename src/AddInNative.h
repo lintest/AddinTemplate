@@ -15,32 +15,42 @@
 #include "AddInDefBase.h"
 #include "IMemoryManager.h"
 
-using PropFunction = std::function<bool(tVariant* pvarPropVal)>;
+class AddInNative;
+
+using CompFunction = std::function<AddInNative*()>;
+
+using PropFunction = std::function<bool(tVariant*)>;
+
+using MethFunction = std::function<bool(tVariant*, std::vector<tVariant*>)>;
 
 class AddInNative : public IComponentBase
 {
 private:
-	class Property {
+	class Prop {
 	public:
 		std::vector<std::u16string> names;
 		PropFunction getter;
 		PropFunction setter;
 	};
 
-	class Method {
-	private:
+	class Meth {
+	public:
 		std::vector<std::u16string> names;
+		MethFunction handler;
 	};
 
-	static std::map<std::u16string, AddInNative* (*)()> components;
-	std::vector<Property> properties;
-	std::vector<Method> methods;
+	static std::map<std::u16string, CompFunction> components;
+	std::vector<Prop> properties;
+	std::vector<Meth> methods;
 	std::u16string name;
 
 protected:
 	bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) const;
+	void AddMethod(const std::vector<std::u16string>& names, MethFunction handler);
+	void AddMethod(const std::u16string& nameEn, const std::u16string& nameRu, MethFunction handler);
 	void AddProperty(const std::vector<std::u16string>& names, PropFunction getter, PropFunction setter = nullptr);
-	static std::u16string AddComponent(const std::u16string& name, AddInNative* (*creator)());
+	void AddProperty(const std::u16string& nameEn, const std::u16string& nameRu, PropFunction getter, PropFunction setter = nullptr);
+	static std::u16string AddComponent(const std::u16string& name, CompFunction creator);
 
 	class VarinantHelper {
 	private:

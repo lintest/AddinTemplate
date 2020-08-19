@@ -56,7 +56,7 @@ long DestroyObject(IComponentBase** pInterface)
 	return 0;
 }
 
-std::map<std::u16string, AddInNative* (*)()> AddInNative::components;
+std::map<std::u16string, CompFunction> AddInNative::components;
 
 bool AddInNative::Init(void* pConnection)
 {
@@ -211,9 +211,9 @@ std::u16string AddInNative::getComponentNames() {
 	return result;
 }
 
-std::u16string AddInNative::AddComponent(const std::u16string& name, AddInNative* (*creator)())
+std::u16string AddInNative::AddComponent(const std::u16string& name, CompFunction creator)
 {
-	components.insert(std::pair<std::u16string, AddInNative* (*)()>(name, creator));
+	components.insert(std::pair<std::u16string, CompFunction>(name, creator));
 	return name;
 }
 
@@ -228,6 +228,21 @@ AddInNative* AddInNative::createObject(const std::u16string& name) {
 void AddInNative::AddProperty(const std::vector<std::u16string>& names, PropFunction getter, PropFunction setter)
 {
 	properties.push_back({ names, getter, setter });
+}
+
+void AddInNative::AddProperty(const std::u16string& nameEn, const std::u16string& nameRu, PropFunction getter, PropFunction setter)
+{
+	properties.push_back({ { nameRu, nameEn }, getter, setter });
+}
+
+void AddInNative::AddMethod(const std::vector<std::u16string>& names, MethFunction handler)
+{
+	methods.push_back({ names, handler });
+}
+
+void AddInNative::AddMethod(const std::u16string& nameEn, const std::u16string& nameRu, MethFunction handler)
+{
+	methods.push_back({ { nameRu, nameEn }, handler });
 }
 
 bool ADDIN_API AddInNative::AllocMemory(void** pMemory, unsigned long ulCountByte) const

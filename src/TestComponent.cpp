@@ -1,12 +1,12 @@
 ﻿#include "TestComponent.h"
 
 std::vector<std::u16string> TestComponent::names = {
-	AddComponent(u"AddInNative", TestComponent::create)
+	AddComponent(u"AddInNative", []() { return new TestComponent; }),
 };
 
 TestComponent::TestComponent()
 {
-	AddProperty({ u"Test", u"Тест" }
+	AddProperty( u"Test", u"Тест"
 		, [&](tVariant* pvar) { return this->getTestString(pvar); }
 		, nullptr
 	);

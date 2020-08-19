@@ -5,10 +5,6 @@
 class TestComponent:
     public AddInNative
 {
-public:
-    static AddInNative* create() {
-        return new TestComponent();
-    }
 private:
     static std::vector<std::u16string> names;
     TestComponent();
