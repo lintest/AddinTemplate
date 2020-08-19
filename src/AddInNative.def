@@ -1,0 +1,4 @@
+EXPORTS
+	GetClassObject
+	DestroyObject
+	GetClassNames
