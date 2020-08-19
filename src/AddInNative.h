@@ -1,10 +1,9 @@
-
 #ifndef __ADDINNATIVE_H__
 #define __ADDINNATIVE_H__
 
 #ifdef _WINDOWS
 #include <wtypes.h>
-#endif _WINDOWS
+#endif //_WINDOWS
 
 #include <map>
 #include <string>

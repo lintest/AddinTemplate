@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __TESTCOMPONENT_H__
+#define __TESTCOMPONENT_H__
 
 #include "AddInNative.h"
 
@@ -11,3 +12,4 @@ private:
 private:
     bool getTestString(tVariant* pvar);
 };
+#endif //__TESTCOMPONENT_H__

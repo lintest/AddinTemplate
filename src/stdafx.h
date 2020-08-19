@@ -5,9 +5,9 @@
 #ifndef __STDAFX_H__
 #define __STDAFX_H__
 
-#ifndef __linux__
+#ifdef _WINDOWS
 #include <windows.h>
-#endif //__linux__
+#endif //_WINDOWS
 
 #include <string>
 
