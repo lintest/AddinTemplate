@@ -39,7 +39,7 @@ private:
 
 protected:
 	bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) const;
-	void AddProperty(const std::vector<std::u16string>& names, PropFunction getter, PropFunction setter);
+	void AddProperty(const std::vector<std::u16string>& names, PropFunction getter, PropFunction setter = nullptr);
 	static std::u16string AddComponent(const std::u16string& name, AddInNative* (*creator)());
 
 	class VarinantHelper {
@@ -54,7 +54,6 @@ protected:
 		VarinantHelper& operator<<(const std::string& str);
 		VarinantHelper& operator<<(const std::wstring& str);
 		VarinantHelper& operator<<(const std::u16string& str);
-		VarinantHelper& operator<<(const wchar_t* str);
 		VarinantHelper& operator<<(int32_t value);
 		VarinantHelper& operator<<(int64_t value);
 		VarinantHelper& operator<<(bool value);
@@ -62,11 +61,11 @@ protected:
 	};
 
 	VarinantHelper VA(tVariant* pvar) { return VarinantHelper(pvar, this); }
-	std::u16string AddInNative::upper(std::u16string& str);
-	std::wstring AddInNative::upper(std::wstring& str);
-	std::string WCHAR2MB(std::basic_string_view<WCHAR_T> src);
-	std::wstring WCHAR2WC(std::basic_string_view<WCHAR_T> src);
-	std::u16string MB2WCHAR(std::string_view src);
+	static std::u16string AddInNative::upper(std::u16string& str);
+	static std::wstring AddInNative::upper(std::wstring& str);
+	static std::string WCHAR2MB(std::basic_string_view<WCHAR_T> src);
+	static std::wstring WCHAR2WC(std::basic_string_view<WCHAR_T> src);
+	static std::u16string MB2WCHAR(std::string_view src);
 	WCHAR_T* W(const char16_t* str) const;
 
 public:
@@ -87,7 +86,7 @@ public:
 	virtual long ADDIN_API FindProp(const WCHAR_T* wsPropName);
 	virtual const WCHAR_T* ADDIN_API GetPropName(long lPropNum, long lPropAlias);
 	virtual bool ADDIN_API GetPropVal(const long lPropNum, tVariant* pvarPropVal);
-	virtual bool ADDIN_API SetPropVal(const long lPropNum, tVariant* varPropVal);
+	virtual bool ADDIN_API SetPropVal(const long lPropNum, tVariant* pvarPropVal);
 	virtual bool ADDIN_API IsPropReadable(const long lPropNum);
 	virtual bool ADDIN_API IsPropWritable(const long lPropNum);
 	virtual long ADDIN_API GetNMethods();

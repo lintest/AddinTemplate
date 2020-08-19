@@ -9,4 +9,9 @@
 #include <windows.h>
 #endif //__linux__
 
+#include <string>
+
+std::wstring MB2WC(const std::string& source);
+std::string WC2MB(const std::wstring& source);
+
 #endif //__STDAFX_H__

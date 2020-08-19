@@ -80,18 +80,17 @@ void AddInNative::Done()
 {
 }
 
-//---------------------------------------------------------------------------//
 bool AddInNative::RegisterExtensionAs(WCHAR_T** wsLanguageExt)
 {
 	*wsLanguageExt = W(name.c_str());
 	return true;
 }
-//---------------------------------------------------------------------------//
+
 long AddInNative::GetNProps()
 {
 	return properties.size();
 }
-//---------------------------------------------------------------------------//
+
 long AddInNative::FindProp(const WCHAR_T* wsPropName)
 {
 	std::u16string name((char16_t*)wsPropName);
@@ -102,7 +101,7 @@ long AddInNative::FindProp(const WCHAR_T* wsPropName)
 	}
 	return -1;
 }
-//---------------------------------------------------------------------------//
+
 const WCHAR_T* AddInNative::GetPropName(long lPropNum, long lPropAlias)
 {
 	auto it = std::next(properties.begin(), lPropNum);
@@ -111,72 +110,86 @@ const WCHAR_T* AddInNative::GetPropName(long lPropNum, long lPropAlias)
 	if (nm == it->names.end()) return nullptr;
 	return W(nm->c_str());
 }
-//---------------------------------------------------------------------------//
+
 bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 {
 	auto it = std::next(properties.begin(), lPropNum);
 	if (it == properties.end()) return false;
-	return VA(pvarPropVal) << std::u16string(u"Test component");
+	try {
+		return it->getter(pvarPropVal);
+	}
+	catch (...) {
+		return false;
+	}
 }
-//---------------------------------------------------------------------------//
-bool AddInNative::SetPropVal(const long lPropNum, tVariant* varPropVal)
+
+bool AddInNative::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
 {
 	auto it = std::next(properties.begin(), lPropNum);
 	if (it == properties.end()) return false;
-	return true;
+	try {
+		return it->setter(pvarPropVal);
+	}
+	catch (...) {
+		return false;
+	}
 }
-//---------------------------------------------------------------------------//
+
 bool AddInNative::IsPropReadable(const long lPropNum)
 {
-	return true;
+	auto it = std::next(properties.begin(), lPropNum);
+	if (it == properties.end()) return false;
+	return (bool)it->getter;
 }
-//---------------------------------------------------------------------------//
+
 bool AddInNative::IsPropWritable(const long lPropNum)
 {
-	return false;
+	auto it = std::next(properties.begin(), lPropNum);
+	if (it == properties.end()) return false;
+	return (bool)it->setter;
 }
-//---------------------------------------------------------------------------//
+
 long AddInNative::GetNMethods()
 {
 	return 0;
 }
-//---------------------------------------------------------------------------//
+
 long AddInNative::FindMethod(const WCHAR_T* wsMethodName)
 {
 	return -1;
 }
-//---------------------------------------------------------------------------//
+
 const WCHAR_T* AddInNative::GetMethodName(const long lMethodNum,
 	const long lMethodAlias)
 {
 	return 0;
 }
-//---------------------------------------------------------------------------//
+
 long AddInNative::GetNParams(const long lMethodNum)
 {
 	return 0;
 }
-//---------------------------------------------------------------------------//
+
 bool AddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue)
 {
 	return false;
 }
-//---------------------------------------------------------------------------//
+
 bool AddInNative::HasRetVal(const long lMethodNum)
 {
 	return false;
 }
-//---------------------------------------------------------------------------//
+
 bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
 {
 	return false;
 }
-//---------------------------------------------------------------------------//
+
 bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
 	return false;
 }
-//---------------------------------------------------------------------------//
+
 void AddInNative::SetLocale(const WCHAR_T* locale)
 {
 	try {
@@ -216,7 +229,6 @@ void AddInNative::AddProperty(const std::vector<std::u16string>& names, PropFunc
 {
 	properties.push_back({ names, getter, setter });
 }
-
 
 bool ADDIN_API AddInNative::AllocMemory(void** pMemory, unsigned long ulCountByte) const
 {
@@ -265,6 +277,41 @@ std::wstring AddInNative::upper(std::wstring& str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), std::towupper);
 	return str;
+}
+
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const std::string& str)
+{
+	return operator<<(AddInNative::MB2WCHAR(str));
+}
+
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const std::wstring& str)
+{
+#ifdef _WINDOWS
+	return operator<<(std::u16string(reinterpret_cast<const char16_t*>(str.data()), str.size()));
+#else
+	return operator<<(AddInNative::WC2MB(str));
+#endif
+}
+
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(int64_t value)
+{
+	TV_VT(pvar) = VTYPE_I4;
+	TV_I8(pvar) = value;
+	return *this;
+}
+
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(int32_t value)
+{
+	TV_VT(pvar) = VTYPE_I4;
+	TV_I4(pvar) = value;
+	return *this;
+}
+
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(bool value)
+{
+	TV_VT(pvar) = VTYPE_BOOL;
+	TV_BOOL(pvar) = value;
+	return *this;
 }
 
 AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const std::u16string& str)

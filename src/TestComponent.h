@@ -13,6 +13,5 @@ private:
     static std::vector<std::u16string> names;
     TestComponent();
 private:
-    bool getTestString(tVariant* pvarPropVal);
+    bool getTestString(tVariant* pvar);
 };
-

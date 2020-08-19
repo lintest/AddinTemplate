@@ -6,10 +6,13 @@ std::vector<std::u16string> TestComponent::names = {
 
 TestComponent::TestComponent()
 {
-	AddProperty({ u"Test", u"Тест" }, nullptr, nullptr);
+	AddProperty({ u"Test", u"Тест" }
+		, [&](tVariant* pvar) { return this->getTestString(pvar); }
+		, nullptr
+	);
 }
 
-bool TestComponent::getTestString(tVariant* pvarPropVal)
+bool TestComponent::getTestString(tVariant* pvar)
 {
-	return VA(pvarPropVal) << std::u16string(u"Test component");
+	return VA(pvar) << std::u16string(u"Test component");
 }
