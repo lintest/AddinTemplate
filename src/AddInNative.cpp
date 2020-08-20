@@ -200,6 +200,7 @@ long AddInNative::GetNParams(const long lMethodNum)
 	if (std::get_if<MethFunction5>(&it->handler)) return 5;
 	if (std::get_if<MethFunction6>(&it->handler)) return 6;
 	if (std::get_if<MethFunction7>(&it->handler)) return 7;
+	return 0;
 }
 
 bool AddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue)
@@ -281,6 +282,7 @@ bool AddInNative::CallMethod(MethFunction* function, tVariant* p, const long lSi
 		(*handler)(VA(p), VA(p + 1), VA(p + 2), VA(p + 3), VA(p + 4), VA(p + 5), VA(p + 6));
 		return true;
 	}
+	return false;
 }
 
 bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
@@ -288,7 +290,7 @@ bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const lo
 	auto it = std::next(methods.begin(), lMethodNum);
 	if (it == methods.end()) return false;
 	try {
-		result = VA(nullptr);
+		result << VA(nullptr);
 		return CallMethod(&it->handler, paParams, lSizeArray);
 	}
 	catch (...) {
@@ -301,13 +303,13 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 	auto it = std::next(methods.begin(), lMethodNum);
 	if (it == methods.end()) return false;
 	try {
-		result = VA(pvarRetValue);
+		result << VA(pvarRetValue);
 		bool ok = CallMethod(&it->handler, paParams, lSizeArray);
-		result = VA(nullptr);
+		result << VA(nullptr);
 		return ok;
 	}
 	catch (...) {
-		result = VA(nullptr);
+		result << VA(nullptr);
 		return false;
 	}
 }

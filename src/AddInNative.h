@@ -50,7 +50,8 @@ protected:
 	public:
 		VarinantHelper(const VarinantHelper& va) :pvar(va.pvar), addin(va.addin) {}
 		VarinantHelper(tVariant* pvar, AddInNative* addin) :pvar(pvar), addin(addin) {}
-		VarinantHelper& operator=(const VarinantHelper& va) { pvar = va.pvar; addin = va.addin; return *this; }
+		VarinantHelper& operator<<(const VarinantHelper& va) { pvar = va.pvar; addin = va.addin; return *this; }
+		VarinantHelper& operator=(const VarinantHelper& va) = delete;
 		VarinantHelper& operator=(const std::string& str);
 		VarinantHelper& operator=(const std::wstring& str);
 		VarinantHelper& operator=(const std::u16string& str);
