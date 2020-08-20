@@ -116,6 +116,8 @@ private:
 		bool hasRetVal;
 	};
 
+	bool CallMethod(MethFunction* function, tVariant* paParams, const long lSizeArray);
+
 	static std::map<std::u16string, CompFunction> components;
 	std::vector<Prop> properties;
 	std::vector<Meth> methods;

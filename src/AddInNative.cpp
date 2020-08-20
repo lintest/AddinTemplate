@@ -239,35 +239,45 @@ bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const lo
 	auto it = std::next(methods.begin(), lMethodNum);
 	if (it == methods.end()) return false;
 	try {
-		if (auto handler = std::get_if<MethFunction0>(&it->handler)) {
-			(*handler)();
-			return true;
-		}
-		if (auto handler = std::get_if<MethFunction1>(&it->handler)) {
-			(*handler)(variant(paParams));
-			return true;
-		}
-		if (auto handler = std::get_if<MethFunction2>(&it->handler)) {
-			(*handler)(variant(paParams), variant(paParams + 1));
-			return true;
-		}
-		if (auto handler = std::get_if<MethFunction3>(&it->handler)) {
-			(*handler)(variant(paParams), variant(paParams + 1), variant(paParams + 2));
-			return true;
-		}
-		if (auto handler = std::get_if<MethFunction4>(&it->handler)) {
-			(*handler)(variant(paParams), variant(paParams+ 1 ), variant(paParams + 2), variant(paParams + 3));
-			return true;
-		}
-		if (auto handler = std::get_if<MethFunction5>(&it->handler)) {
-			(*handler)(variant(paParams), variant(paParams + 1), variant(paParams + 2), variant(paParams + 3), variant(paParams + 4));
-			return true;
-		}
+		return CallMethod(&it->handler, paParams, lSizeArray);
 	}
 	catch (...) {
 		return false;
 	}
 	return false;
+}
+
+bool AddInNative::CallMethod(MethFunction *function, tVariant* paParams, const long lSizeArray)
+{
+	if (auto handler = std::get_if<MethFunction0>(function)) {
+		(*handler)();
+		return true;
+	}
+	if (auto handler = std::get_if<MethFunction1>(function)) {
+		if (lSizeArray < 1) throw std::bad_function_call();
+		(*handler)(variant(paParams));
+		return true;
+	}
+	if (auto handler = std::get_if<MethFunction2>(function)) {
+		if (lSizeArray < 2) throw std::bad_function_call();
+		(*handler)(variant(paParams), variant(paParams + 1));
+		return true;
+	}
+	if (auto handler = std::get_if<MethFunction3>(function)) {
+		if (lSizeArray < 3) throw std::bad_function_call();
+		(*handler)(variant(paParams), variant(paParams + 1), variant(paParams + 2));
+		return true;
+	}
+	if (auto handler = std::get_if<MethFunction4>(function)) {
+		if (lSizeArray < 4) throw std::bad_function_call();
+		(*handler)(variant(paParams), variant(paParams + 1), variant(paParams + 2), variant(paParams + 3));
+		return true;
+	}
+	if (auto handler = std::get_if<MethFunction5>(function)) {
+		if (lSizeArray < 5) throw std::bad_function_call();
+		(*handler)(variant(paParams), variant(paParams + 1), variant(paParams + 2), variant(paParams + 3), variant(paParams + 4));
+		return true;
+	}
 }
 
 bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
@@ -276,30 +286,7 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 	if (it == methods.end()) return false;
 	try {
 		result = variant(pvarRetValue);
-		if (auto handler = std::get_if<MethFunction0>(&it->handler)) {
-			(*handler)();
-			return true;
-		}
-		if (auto handler = std::get_if<MethFunction1>(&it->handler)) {
-			(*handler)(variant(paParams));
-			return true;
-		}
-		if (auto handler = std::get_if<MethFunction2>(&it->handler)) {
-			(*handler)(variant(paParams), variant(paParams + 1));
-			return true;
-		}
-		if (auto handler = std::get_if<MethFunction3>(&it->handler)) {
-			(*handler)(variant(paParams), variant(paParams + 1), variant(paParams + 2));
-			return true;
-		}
-		if (auto handler = std::get_if<MethFunction4>(&it->handler)) {
-			(*handler)(variant(paParams), variant(paParams + 1), variant(paParams + 2), variant(paParams + 3));
-			return true;
-		}
-		if (auto handler = std::get_if<MethFunction5>(&it->handler)) {
-			(*handler)(variant(paParams), variant(paParams + 1), variant(paParams + 2), variant(paParams + 3), variant(paParams + 4));
-			return true;
-		}
+		return CallMethod(&it->handler, paParams, lSizeArray);
 	}
 	catch (...) {
 		return false;
