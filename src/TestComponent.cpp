@@ -2,6 +2,7 @@
 
 std::vector<std::u16string> TestComponent::names = {
 	AddComponent(u"AddInNative", []() { return new TestComponent; }),
+	AddComponent(u"SimpleAlias", []() { return new TestComponent; }),
 };
 
 TestComponent::TestComponent()

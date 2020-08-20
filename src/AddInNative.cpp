@@ -121,7 +121,7 @@ bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 	if (it == properties.end()) return false;
 	if (!it->getter) return false;
 	try {
-		it->getter(variant(pvarPropVal));
+		it->getter(VA(pvarPropVal));
 		return true;
 	}
 	catch (...) {
@@ -135,7 +135,7 @@ bool AddInNative::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
 	if (it == properties.end()) return false;
 	if (!it->setter) return false;
 	try {
-		it->setter(variant(pvarPropVal));
+		it->setter(VA(pvarPropVal));
 		return true;
 	}
 	catch (...) {
@@ -198,6 +198,8 @@ long AddInNative::GetNParams(const long lMethodNum)
 	if (std::get_if<MethFunction3>(&it->handler)) return 3;
 	if (std::get_if<MethFunction4>(&it->handler)) return 4;
 	if (std::get_if<MethFunction5>(&it->handler)) return 5;
+	if (std::get_if<MethFunction6>(&it->handler)) return 6;
+	if (std::get_if<MethFunction7>(&it->handler)) return 7;
 }
 
 bool AddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue)
@@ -209,15 +211,15 @@ bool AddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, 
 		if (p == it->defs.end()) return false;
 		auto var = &p->second.variant;
 		if (auto value = std::get_if<std::u16string>(var)) {
-			variant(pvarParamDefValue) << *value;
+			VA(pvarParamDefValue) << *value;
 			return true;
 		}
 		if (auto value = std::get_if<int32_t>(var)) {
-			variant(pvarParamDefValue) << *value;
+			VA(pvarParamDefValue) << *value;
 			return true;
 		}
 		if (auto value = std::get_if<bool>(var)) {
-			variant(pvarParamDefValue) << *value;
+			VA(pvarParamDefValue) << *value;
 			return true;
 		}
 		return false;
@@ -234,20 +236,7 @@ bool AddInNative::HasRetVal(const long lMethodNum)
 	return it->hasRetVal;
 }
 
-bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
-{
-	auto it = std::next(methods.begin(), lMethodNum);
-	if (it == methods.end()) return false;
-	try {
-		return CallMethod(&it->handler, paParams, lSizeArray);
-	}
-	catch (...) {
-		return false;
-	}
-	return false;
-}
-
-bool AddInNative::CallMethod(MethFunction *function, tVariant* paParams, const long lSizeArray)
+bool AddInNative::CallMethod(MethFunction* function, tVariant* p, const long lSizeArray)
 {
 	if (auto handler = std::get_if<MethFunction0>(function)) {
 		(*handler)();
@@ -255,28 +244,51 @@ bool AddInNative::CallMethod(MethFunction *function, tVariant* paParams, const l
 	}
 	if (auto handler = std::get_if<MethFunction1>(function)) {
 		if (lSizeArray < 1) throw std::bad_function_call();
-		(*handler)(variant(paParams));
+		(*handler)(VA(p));
 		return true;
 	}
 	if (auto handler = std::get_if<MethFunction2>(function)) {
 		if (lSizeArray < 2) throw std::bad_function_call();
-		(*handler)(variant(paParams), variant(paParams + 1));
+		(*handler)(VA(p), VA(p + 1));
 		return true;
 	}
 	if (auto handler = std::get_if<MethFunction3>(function)) {
 		if (lSizeArray < 3) throw std::bad_function_call();
-		(*handler)(variant(paParams), variant(paParams + 1), variant(paParams + 2));
+		(*handler)(VA(p), VA(p + 1), VA(p + 2));
 		return true;
 	}
 	if (auto handler = std::get_if<MethFunction4>(function)) {
 		if (lSizeArray < 4) throw std::bad_function_call();
-		(*handler)(variant(paParams), variant(paParams + 1), variant(paParams + 2), variant(paParams + 3));
+		(*handler)(VA(p), VA(p + 1), VA(p + 2), VA(p + 3));
 		return true;
 	}
 	if (auto handler = std::get_if<MethFunction5>(function)) {
 		if (lSizeArray < 5) throw std::bad_function_call();
-		(*handler)(variant(paParams), variant(paParams + 1), variant(paParams + 2), variant(paParams + 3), variant(paParams + 4));
+		(*handler)(VA(p), VA(p + 1), VA(p + 2), VA(p + 3), VA(p + 4));
 		return true;
+	}
+	if (auto handler = std::get_if<MethFunction6>(function)) {
+		if (lSizeArray < 6) throw std::bad_function_call();
+		(*handler)(VA(p), VA(p + 1), VA(p + 2), VA(p + 3), VA(p + 4), VA(p + 5));
+		return true;
+	}
+	if (auto handler = std::get_if<MethFunction7>(function)) {
+		if (lSizeArray < 7) throw std::bad_function_call();
+		(*handler)(VA(p), VA(p + 1), VA(p + 2), VA(p + 3), VA(p + 4), VA(p + 5), VA(p + 6));
+		return true;
+	}
+}
+
+bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
+{
+	auto it = std::next(methods.begin(), lMethodNum);
+	if (it == methods.end()) return false;
+	try {
+		result = VA(nullptr);
+		return CallMethod(&it->handler, paParams, lSizeArray);
+	}
+	catch (...) {
+		return false;
 	}
 }
 
@@ -285,13 +297,15 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 	auto it = std::next(methods.begin(), lMethodNum);
 	if (it == methods.end()) return false;
 	try {
-		result = variant(pvarRetValue);
-		return CallMethod(&it->handler, paParams, lSizeArray);
+		result = VA(pvarRetValue);
+		bool ok = CallMethod(&it->handler, paParams, lSizeArray);
+		result = VA(nullptr);
+		return ok;
 	}
 	catch (...) {
+		result = VA(nullptr);
 		return false;
 	}
-	return false;
 }
 
 void AddInNative::SetLocale(const WCHAR_T* locale)
@@ -317,7 +331,7 @@ std::u16string AddInNative::getComponentNames() {
 
 std::u16string AddInNative::AddComponent(const std::u16string& name, CompFunction creator)
 {
-	components.insert(std::pair<std::u16string, CompFunction>(name, creator));
+	components.insert({ name, creator });
 	return name;
 }
 

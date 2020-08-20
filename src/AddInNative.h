@@ -68,13 +68,14 @@ protected:
 	using VH = VarinantHelper;
 	using MethDefaults = std::map<int, DefaultHelper>;
 	using PropFunction = std::function<void(VH)>;
-
 	using MethFunction0 = std::function<void()>;
 	using MethFunction1 = std::function<void(VH)>;
 	using MethFunction2 = std::function<void(VH, VH)>;
 	using MethFunction3 = std::function<void(VH, VH, VH)>;
 	using MethFunction4 = std::function<void(VH, VH, VH, VH)>;
 	using MethFunction5 = std::function<void(VH, VH, VH, VH, VH)>;
+	using MethFunction6 = std::function<void(VH, VH, VH, VH, VH, VH)>;
+	using MethFunction7 = std::function<void(VH, VH, VH, VH, VH, VH, VH)>;
 
 	using MethFunction = std::variant<
 		MethFunction0,
@@ -82,7 +83,9 @@ protected:
 		MethFunction2,
 		MethFunction3,
 		MethFunction4,
-		MethFunction5
+		MethFunction5,
+		MethFunction6,
+		MethFunction7
 	>;
 
 	bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) const;
@@ -93,7 +96,6 @@ protected:
 	static std::u16string AddComponent(const std::u16string& name, CompFunction creator);
 	VarinantHelper result;
 
-	VarinantHelper variant(tVariant* pvar) { return VarinantHelper(pvar, this); }
 	static std::u16string AddInNative::upper(std::u16string& str);
 	static std::wstring AddInNative::upper(std::wstring& str);
 	static std::string WCHAR2MB(std::basic_string_view<WCHAR_T> src);
@@ -102,8 +104,7 @@ protected:
 	WCHAR_T* W(const char16_t* str) const;
 
 private:
-	class Prop {
-	public:
+	struct Prop {
 		std::vector<std::u16string> names;
 		PropFunction getter;
 		PropFunction setter;
@@ -117,7 +118,7 @@ private:
 	};
 
 	bool CallMethod(MethFunction* function, tVariant* paParams, const long lSizeArray);
-
+	VarinantHelper VA(tVariant* pvar) { return VarinantHelper(pvar, this); }
 	static std::map<std::u16string, CompFunction> components;
 	std::vector<Prop> properties;
 	std::vector<Meth> methods;
