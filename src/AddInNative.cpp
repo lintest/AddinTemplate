@@ -225,21 +225,38 @@ bool AddInNative::HasRetVal(const long lMethodNum)
 {
 	auto it = std::next(methods.begin(), lMethodNum);
 	if (it == methods.end()) return false;
-	return it->getter || it->func;
+	return it->hasRetVal;
 }
 
 bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
 {
 	auto it = std::next(methods.begin(), lMethodNum);
 	if (it == methods.end()) return false;
-	if (!it->proc) return false;
 	try {
-		VA params;
-		for (long i = 0; i < lSizeArray; i++) {
-			params.push_back(variant(paParams++));
+		if (auto handler = std::get_if<MethFunction0>(&it->handler)) {
+			(*handler)();
+			return true;
 		}
-		it->proc(params);
-		return true;
+		if (auto handler = std::get_if<MethFunction1>(&it->handler)) {
+			(*handler)(variant(paParams));
+			return true;
+		}
+		if (auto handler = std::get_if<MethFunction2>(&it->handler)) {
+			(*handler)(variant(paParams), variant(paParams + 1));
+			return true;
+		}
+		if (auto handler = std::get_if<MethFunction3>(&it->handler)) {
+			(*handler)(variant(paParams), variant(paParams + 1), variant(paParams + 2));
+			return true;
+		}
+		if (auto handler = std::get_if<MethFunction4>(&it->handler)) {
+			(*handler)(variant(paParams), variant(paParams+ 1 ), variant(paParams + 2), variant(paParams + 3));
+			return true;
+		}
+		if (auto handler = std::get_if<MethFunction5>(&it->handler)) {
+			(*handler)(variant(paParams), variant(paParams + 1), variant(paParams + 2), variant(paParams + 3), variant(paParams + 4));
+			return true;
+		}
 	}
 	catch (...) {
 		return false;
@@ -251,15 +268,32 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 {
 	auto it = std::next(methods.begin(), lMethodNum);
 	if (it == methods.end()) return false;
-	if (!it->func && !it->getter) return false;
 	try {
-		VA params;
-		for (long i = 0; i < lSizeArray; i++) {
-			params.push_back(variant(paParams++));
+		result = variant(pvarRetValue);
+		if (auto handler = std::get_if<MethFunction0>(&it->handler)) {
+			(*handler)();
+			return true;
 		}
-		if (it->func) it->func(variant(pvarRetValue), params);
-		else if (it->getter) it->getter(variant(pvarRetValue));
-		return true;
+		if (auto handler = std::get_if<MethFunction1>(&it->handler)) {
+			(*handler)(variant(paParams));
+			return true;
+		}
+		if (auto handler = std::get_if<MethFunction2>(&it->handler)) {
+			(*handler)(variant(paParams), variant(paParams + 1));
+			return true;
+		}
+		if (auto handler = std::get_if<MethFunction3>(&it->handler)) {
+			(*handler)(variant(paParams), variant(paParams + 1), variant(paParams + 2));
+			return true;
+		}
+		if (auto handler = std::get_if<MethFunction4>(&it->handler)) {
+			(*handler)(variant(paParams), variant(paParams + 1), variant(paParams + 2), variant(paParams + 3));
+			return true;
+		}
+		if (auto handler = std::get_if<MethFunction5>(&it->handler)) {
+			(*handler)(variant(paParams), variant(paParams + 1), variant(paParams + 2), variant(paParams + 3), variant(paParams + 4));
+			return true;
+		}
 	}
 	catch (...) {
 		return false;
@@ -307,19 +341,14 @@ void AddInNative::AddProperty(const std::u16string& nameEn, const std::u16string
 	properties.push_back({ { nameRu, nameEn }, getter, setter });
 }
 
-void AddInNative::AddMethod(const std::u16string& nameEn, const std::u16string& nameRu, PropFunction handler)
+void AddInNative::AddProcedure(const std::u16string& nameEn, const std::u16string& nameRu, MethDefaults defs, MethFunction handler)
 {
-	methods.push_back({ { nameRu, nameEn }, handler, nullptr, nullptr, {} });
+	methods.push_back({ { nameRu, nameEn }, handler, defs, false });
 }
 
-void AddInNative::AddMethod(const std::u16string& nameEn, const std::u16string& nameRu, ProcFunction handler, MethDefaults defs)
+void AddInNative::AddFunction(const std::u16string& nameEn, const std::u16string& nameRu, MethDefaults defs, MethFunction handler)
 {
-	methods.push_back({ { nameRu, nameEn }, nullptr, handler, nullptr, defs });
-}
-
-void AddInNative::AddMethod(const std::u16string& nameEn, const std::u16string& nameRu, FuncFunction handler, MethDefaults defs)
-{
-	methods.push_back({ { nameRu, nameEn }, nullptr, nullptr, handler, defs });
+	methods.push_back({ { nameRu, nameEn }, handler, defs, true });
 }
 
 bool ADDIN_API AddInNative::AllocMemory(void** pMemory, unsigned long ulCountByte) const
@@ -397,6 +426,7 @@ AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const std::
 
 void AddInNative::VarinantHelper::clear()
 {
+	if (pvar == nullptr) throw std::bad_variant_access();
 	switch (TV_VT(pvar)) {
 	case VTYPE_BLOB:
 	case VTYPE_PWSTR:
@@ -443,10 +473,37 @@ AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const std::
 	return *this;
 }
 
+AddInNative::VarinantHelper::operator std::string() const
+{
+	std::u16string str(*this);
+	return WCHAR2MB((WCHAR_T*)str.c_str());
+}
+
+AddInNative::VarinantHelper::operator std::wstring() const
+{
+	std::u16string str(*this);
+	return WCHAR2WC((WCHAR_T*)str.c_str());
+}
+
 AddInNative::VarinantHelper::operator std::u16string() const
 {
+	if (pvar == nullptr) throw std::bad_variant_access();
 	if (pvar->vt != VTYPE_PWSTR) throw std::bad_typeid();
 	return reinterpret_cast<char16_t*>(pvar->pwstrVal);
+}
+
+AddInNative::VarinantHelper::operator int32_t() const
+{
+	if (pvar == nullptr) throw std::bad_variant_access();
+	if (TV_VT(pvar) != VTYPE_I4) throw std::bad_typeid();
+	return TV_I4(pvar);
+}
+
+AddInNative::VarinantHelper::operator bool() const
+{
+	if (pvar == nullptr) throw std::bad_variant_access();
+	if (TV_VT(pvar) != VTYPE_BOOL) throw std::bad_typeid();
+	return TV_BOOL(pvar);
 }
 
 WCHAR_T* AddInNative::W(const char16_t* str) const
