@@ -11,8 +11,9 @@ TestComponent::TestComponent()
 		[&](VH var) { this->setTestString(var); }
 	);
 
-	AddFunction(u"GetText", u"ПолучитьТекст", {}, [&]() { this->result << this->getTestString(); });
-	AddProcedure(u"SetText", u"УстановитьТекст", { u"default: " }, [&](VH par) { this->setTestString(par); });
+	AddFunction(u"GetText", u"ПолучитьТекст", [&]() { this->result << this->getTestString(); });
+
+	AddProcedure(u"SetText", u"УстановитьТекст", [&](VH par) { this->setTestString(par); }, { {0, u"default: "} });
 }
 
 #include <iostream>

@@ -66,8 +66,7 @@ protected:
 	};
 
 	using VH = VarinantHelper;
-	using VA = std::vector<VH>;
-	using MethDefaults = std::vector<DefaultHelper>;
+	using MethDefaults = std::map<int, DefaultHelper>;
 	using PropFunction = std::function<void(VH)>;
 
 	using MethFunction0 = std::function<void()>;
@@ -89,8 +88,8 @@ protected:
 	bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) const;
 	void ADDIN_API FreeMemory(void** pMemory) const;
 	void AddProperty(const std::u16string& nameEn, const std::u16string& nameRu, PropFunction getter, PropFunction setter = nullptr);
-	void AddProcedure(const std::u16string& nameEn, const std::u16string& nameRu, MethDefaults defs, MethFunction handler);
-	void AddFunction(const std::u16string& nameEn, const std::u16string& nameRu, MethDefaults defs, MethFunction handler);
+	void AddProcedure(const std::u16string& nameEn, const std::u16string& nameRu, MethFunction handler, MethDefaults defs = {});
+	void AddFunction(const std::u16string& nameEn, const std::u16string& nameRu, MethFunction handler, MethDefaults defs = {});
 	static std::u16string AddComponent(const std::u16string& name, CompFunction creator);
 	VarinantHelper result;
 

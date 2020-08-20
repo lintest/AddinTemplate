@@ -192,7 +192,12 @@ long AddInNative::GetNParams(const long lMethodNum)
 {
 	auto it = std::next(methods.begin(), lMethodNum);
 	if (it == methods.end()) return 0;
-	return it->defs.size();
+	if (std::get_if<MethFunction0>(&it->handler)) return 0;
+	if (std::get_if<MethFunction1>(&it->handler)) return 1;
+	if (std::get_if<MethFunction2>(&it->handler)) return 2;
+	if (std::get_if<MethFunction3>(&it->handler)) return 3;
+	if (std::get_if<MethFunction4>(&it->handler)) return 4;
+	if (std::get_if<MethFunction5>(&it->handler)) return 5;
 }
 
 bool AddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue)
@@ -200,17 +205,18 @@ bool AddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, 
 	try {
 		auto it = std::next(methods.begin(), lMethodNum);
 		if (it == methods.end()) return false;
-		auto p = std::next(it->defs.begin(), lParamNum);
+		auto p = it->defs.find(lParamNum);
 		if (p == it->defs.end()) return false;
-		if (auto value = std::get_if<std::u16string>(&p->variant)) {
+		auto var = &p->second.variant;
+		if (auto value = std::get_if<std::u16string>(var)) {
 			variant(pvarParamDefValue) << *value;
 			return true;
 		}
-		if (auto value = std::get_if<int32_t>(&p->variant)) {
+		if (auto value = std::get_if<int32_t>(var)) {
 			variant(pvarParamDefValue) << *value;
 			return true;
 		}
-		if (auto value = std::get_if<bool>(&p->variant)) {
+		if (auto value = std::get_if<bool>(var)) {
 			variant(pvarParamDefValue) << *value;
 			return true;
 		}
@@ -341,12 +347,12 @@ void AddInNative::AddProperty(const std::u16string& nameEn, const std::u16string
 	properties.push_back({ { nameRu, nameEn }, getter, setter });
 }
 
-void AddInNative::AddProcedure(const std::u16string& nameEn, const std::u16string& nameRu, MethDefaults defs, MethFunction handler)
+void AddInNative::AddProcedure(const std::u16string& nameEn, const std::u16string& nameRu, MethFunction handler, MethDefaults defs)
 {
 	methods.push_back({ { nameRu, nameEn }, handler, defs, false });
 }
 
-void AddInNative::AddFunction(const std::u16string& nameEn, const std::u16string& nameRu, MethDefaults defs, MethFunction handler)
+void AddInNative::AddFunction(const std::u16string& nameEn, const std::u16string& nameRu, MethFunction handler, MethDefaults defs)
 {
 	methods.push_back({ { nameRu, nameEn }, handler, defs, true });
 }
