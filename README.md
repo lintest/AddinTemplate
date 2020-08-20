@@ -8,7 +8,7 @@
 изящества шаблона [Infactum](https://github.com/Infactum/addin-template),
 тоже позволяет регистрировать компоненту под несколькими именами, 
 использет лямбда-выражения для регистрации компоненты в библиотеке, при определении 
-свойств, методов. При обращении к свойствам и методам регистр игнорируется.
+свойств и методов. При обращении к свойствам и методам регистр игнорируется.
 
 ```Cpp
 std::vector<std::u16string> TestComponent::names = {
@@ -19,12 +19,12 @@ std::vector<std::u16string> TestComponent::names = {
 TestComponent::TestComponent()
 {
 	AddProperty(u"Text", u"Текст",
-		[&](VH var) { var << this->getTestString(); },
+		[&](VH var) { var = this->getTestString(); },
 		[&](VH var) { this->setTestString(var); }
 	);
 
 	AddFunction(u"GetText", u"ПолучитьТекст", 
-		[&]() { this->result << this->getTestString(); }
+		[&]() { this->result = this->getTestString(); }
 	);
 
 	AddProcedure(u"SetText", u"УстановитьТекст", 

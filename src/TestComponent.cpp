@@ -8,11 +8,11 @@ std::vector<std::u16string> TestComponent::names = {
 TestComponent::TestComponent()
 {
 	AddProperty(u"Text", u"Текст",
-		[&](VH var) { var << this->getTestString(); },
+		[&](VH var) { var = this->getTestString(); },
 		[&](VH var) { this->setTestString(var); }
 	);
 
-	AddFunction(u"GetText", u"ПолучитьТекст", [&]() { this->result << this->getTestString(); });
+	AddFunction(u"GetText", u"ПолучитьТекст", [&]() { this->result = this->getTestString(); });
 
 	AddProcedure(u"SetText", u"УстановитьТекст", [&](VH par) { this->setTestString(par); }, { {0, u"default: "} });
 }

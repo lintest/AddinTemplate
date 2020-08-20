@@ -51,12 +51,12 @@ protected:
 		VarinantHelper(const VarinantHelper& va) :pvar(va.pvar), addin(va.addin) {}
 		VarinantHelper(tVariant* pvar, AddInNative* addin) :pvar(pvar), addin(addin) {}
 		VarinantHelper& operator=(const VarinantHelper& va) { pvar = va.pvar; addin = va.addin; return *this; }
-		VarinantHelper& operator<<(const std::string& str);
-		VarinantHelper& operator<<(const std::wstring& str);
-		VarinantHelper& operator<<(const std::u16string& str);
-		VarinantHelper& operator<<(int32_t value);
-		VarinantHelper& operator<<(int64_t value);
-		VarinantHelper& operator<<(bool value);
+		VarinantHelper& operator=(const std::string& str);
+		VarinantHelper& operator=(const std::wstring& str);
+		VarinantHelper& operator=(const std::u16string& str);
+		VarinantHelper& operator=(int32_t value);
+		VarinantHelper& operator=(double value);
+		VarinantHelper& operator=(bool value);
 		operator std::string() const;
 		operator std::wstring() const;
 		operator std::u16string() const;

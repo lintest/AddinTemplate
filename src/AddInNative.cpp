@@ -211,15 +211,19 @@ bool AddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, 
 		if (p == it->defs.end()) return false;
 		auto var = &p->second.variant;
 		if (auto value = std::get_if<std::u16string>(var)) {
-			VA(pvarParamDefValue) << *value;
+			VA(pvarParamDefValue) = *value;
 			return true;
 		}
 		if (auto value = std::get_if<int32_t>(var)) {
-			VA(pvarParamDefValue) << *value;
+			VA(pvarParamDefValue) = *value;
+			return true;
+		}
+		if (auto value = std::get_if<double>(var)) {
+			VA(pvarParamDefValue) = *value;
 			return true;
 		}
 		if (auto value = std::get_if<bool>(var)) {
-			VA(pvarParamDefValue) << *value;
+			VA(pvarParamDefValue) = *value;
 			return true;
 		}
 		return false;
@@ -416,18 +420,18 @@ std::wstring AddInNative::upper(std::wstring& str)
 	return str;
 }
 
-AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const std::string& str)
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator=(const std::string& str)
 {
-	return operator<<(AddInNative::MB2WCHAR(str));
+	return operator=(AddInNative::MB2WCHAR(str));
 }
 
-AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const std::wstring& str)
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator=(const std::wstring& str)
 {
 	if (sizeof(WCHAR_T) == 2) {
-		return operator<<(std::u16string(reinterpret_cast<const char16_t*>(str.data()), str.size()));
+		return operator=(std::u16string(reinterpret_cast<const char16_t*>(str.data()), str.size()));
 	}
 	else {
-		return operator<<(WC2MB(str));
+		return operator=(WC2MB(str));
 	}
 }
 
@@ -443,15 +447,7 @@ void AddInNative::VarinantHelper::clear()
 	tVarInit(pvar);
 }
 
-AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(int64_t value)
-{
-	clear();
-	TV_VT(pvar) = VTYPE_I4;
-	TV_I8(pvar) = value;
-	return *this;
-}
-
-AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(int32_t value)
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator=(int32_t value)
 {
 	clear();
 	TV_VT(pvar) = VTYPE_I4;
@@ -459,7 +455,15 @@ AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(int32_t val
 	return *this;
 }
 
-AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(bool value)
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator=(double value)
+{
+	clear();
+	TV_VT(pvar) = VTYPE_R8;
+	TV_R8(pvar) = value;
+	return *this;
+}
+
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator=(bool value)
 {
 	clear();
 	TV_VT(pvar) = VTYPE_BOOL;
@@ -467,7 +471,7 @@ AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(bool value)
 	return *this;
 }
 
-AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const std::u16string& str)
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator=(const std::u16string& str)
 {
 	clear();
 	TV_VT(pvar) = VTYPE_PWSTR;
