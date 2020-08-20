@@ -509,7 +509,27 @@ AddInNative::VarinantHelper::operator int32_t() const
 {
 	if (pvar == nullptr) throw std::bad_variant_access();
 	if (TV_VT(pvar) != VTYPE_I4) throw std::bad_typeid();
-	return TV_I4(pvar);
+	switch (TV_VT(pvar)) {
+	case VTYPE_I2:
+	case VTYPE_I4:
+	case VTYPE_UI1:
+	case VTYPE_ERROR:
+		return pvar->lVal;
+	default:
+		throw std::bad_typeid();
+	}
+}
+
+AddInNative::VarinantHelper::operator double() const
+{
+	if (pvar == nullptr) throw std::bad_variant_access();
+	switch (TV_VT(pvar)) {
+	case VTYPE_R4:
+	case VTYPE_R8:
+		return pvar->dblVal;
+	default:
+		throw std::bad_typeid();
+	}
 }
 
 AddInNative::VarinantHelper::operator bool() const

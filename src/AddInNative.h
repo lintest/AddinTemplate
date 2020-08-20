@@ -62,6 +62,7 @@ protected:
 		operator std::wstring() const;
 		operator std::u16string() const;
 		operator int32_t() const;
+		operator double() const;
 		operator bool() const;
 		void clear();
 	};
