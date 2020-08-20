@@ -6,13 +6,31 @@ std::vector<std::u16string> TestComponent::names = {
 
 TestComponent::TestComponent()
 {
-	AddProperty( u"Test", u"Тест"
-		, [&](tVariant* pvar) { return this->getTestString(pvar); }
-		, nullptr
+	AddProperty(u"Text", u"Текст",
+		[&](VH var) { var << this->getTestString(); },
+		[&](VH var) { this->setTestString(var); }
 	);
+
+	AddMethod(u"GetText", u"ПолучитьТекст", [&](VH var) { var << this->getTestString(); });
+	AddMethod(u"SetText", u"УстановитьТекст", [&](VA par) { this->setTestString(par[0]); }, { u"default: " });
 }
 
-bool TestComponent::getTestString(tVariant* pvar)
+#include <iostream>
+#include <ctime>
+
+std::u16string TestComponent::getTestString()
 {
-	return VA(pvar) << std::u16string(u"Test component");
+	time_t rawtime;
+	struct tm* timeinfo;
+	char buffer[255];
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", timeinfo);
+	return text + MB2WCHAR(buffer);
 }
+
+void TestComponent::setTestString(const std::u16string& text)
+{
+	this->text = text;
+}
+

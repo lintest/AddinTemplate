@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <variant>
 #include <functional>
 
 #include "ComponentBase.h"
@@ -16,51 +17,37 @@
 
 class AddInNative;
 
-using CompFunction = std::function<AddInNative*()>;
+using CompFunction = std::function<AddInNative* ()>;
 
-using PropFunction = std::function<bool(tVariant*)>;
-
-using FuncFunction = std::function<bool(tVariant*, std::vector<tVariant*>)>;
-
-using ProcFunction = std::function<bool(std::vector<tVariant*>)>;
+class DefaultHelper {
+public:
+	std::variant<
+		std::monostate,
+		std::u16string,
+		int32_t,
+		double,
+		bool
+	> variant;
+public:
+	DefaultHelper() : variant(std::monostate()) {}
+	DefaultHelper(const std::u16string& s): variant(s) {}
+	DefaultHelper(int32_t value): variant(value) {}
+	DefaultHelper(double value): variant(value) {}
+	DefaultHelper(bool value): variant(value) {}
+	DefaultHelper(const char16_t* value) {
+		if (value) variant = std::u16string(value);
+		else variant = std::monostate();
+	}
+};
 
 class AddInNative : public IComponentBase
 {
-private:
-	class Prop {
-	public:
-		std::vector<std::u16string> names;
-		PropFunction getter;
-		PropFunction setter;
-	};
-
-	class Meth {
-	public:
-		std::vector<std::u16string> names;
-		FuncFunction func;
-		ProcFunction proc;
-	};
-
-	static std::map<std::u16string, CompFunction> components;
-	std::vector<Prop> properties;
-	std::vector<Meth> methods;
-	std::u16string name;
-
 protected:
-	bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) const;
-	void AddMethod(const std::vector<std::u16string>& names, FuncFunction handler);
-	void AddMethod(const std::vector<std::u16string>& names, ProcFunction handler);
-	void AddMethod(const std::u16string& nameEn, const std::u16string& nameRu, FuncFunction handler);
-	void AddMethod(const std::u16string& nameEn, const std::u16string& nameRu, ProcFunction handler);
-	void AddProperty(const std::vector<std::u16string>& names, PropFunction getter, PropFunction setter = nullptr);
-	void AddProperty(const std::u16string& nameEn, const std::u16string& nameRu, PropFunction getter, PropFunction setter = nullptr);
-	static std::u16string AddComponent(const std::u16string& name, CompFunction creator);
-
 	class VarinantHelper {
 	private:
-		bool success = true;
-		tVariant* pvar = NULL;
-		AddInNative* addin = NULL;
+		tVariant* pvar = nullptr;
+		AddInNative* addin = nullptr;
+		void clear();
 	public:
 		VarinantHelper(const VarinantHelper& va) :pvar(va.pvar), addin(va.addin) {}
 		VarinantHelper(tVariant* pvar, AddInNative* addin) :pvar(pvar), addin(addin) {}
@@ -71,16 +58,52 @@ protected:
 		VarinantHelper& operator<<(int32_t value);
 		VarinantHelper& operator<<(int64_t value);
 		VarinantHelper& operator<<(bool value);
-		operator bool() const { return success; };
+		operator std::u16string() const;
 	};
 
-	VarinantHelper VA(tVariant* pvar) { return VarinantHelper(pvar, this); }
+	using VH = VarinantHelper;
+	using VA = std::vector<VH>;
+	using MethDefaults = std::vector<DefaultHelper>;
+	using PropFunction = std::function<void(VH)>;
+	using FuncFunction = std::function<void(VH, std::vector<VH>)>;
+	using ProcFunction = std::function<void(std::vector<VH>)>;
+
+	bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) const;
+	void ADDIN_API FreeMemory(void** pMemory) const;
+	void AddProperty(const std::u16string& nameEn, const std::u16string& nameRu, PropFunction getter, PropFunction setter = nullptr);
+	void AddMethod(const std::u16string& nameEn, const std::u16string& nameRu, PropFunction handler);
+	void AddMethod(const std::u16string& nameEn, const std::u16string& nameRu, FuncFunction handler, MethDefaults defs = {});
+	void AddMethod(const std::u16string& nameEn, const std::u16string& nameRu, ProcFunction handler, MethDefaults defs = {});
+	static std::u16string AddComponent(const std::u16string& name, CompFunction creator);
+
+	VarinantHelper variant(tVariant* pvar) { return VarinantHelper(pvar, this); }
 	static std::u16string AddInNative::upper(std::u16string& str);
 	static std::wstring AddInNative::upper(std::wstring& str);
 	static std::string WCHAR2MB(std::basic_string_view<WCHAR_T> src);
 	static std::wstring WCHAR2WC(std::basic_string_view<WCHAR_T> src);
 	static std::u16string MB2WCHAR(std::string_view src);
 	WCHAR_T* W(const char16_t* str) const;
+
+private:
+	class Prop {
+	public:
+		std::vector<std::u16string> names;
+		PropFunction getter;
+		PropFunction setter;
+	};
+
+	struct Meth {
+		std::vector<std::u16string> names;
+		PropFunction getter;
+		ProcFunction proc;
+		FuncFunction func;
+		MethDefaults defs;
+	};
+
+	static std::map<std::u16string, CompFunction> components;
+	std::vector<Prop> properties;
+	std::vector<Meth> methods;
+	std::u16string name;
 
 public:
 	static std::u16string AddInNative::getComponentNames();

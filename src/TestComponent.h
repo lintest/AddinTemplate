@@ -10,6 +10,8 @@ private:
     static std::vector<std::u16string> names;
     TestComponent();
 private:
-    bool getTestString(tVariant* pvar);
+    std::u16string text;
+    std::u16string getTestString();
+    void setTestString(const std::u16string &text);
 };
 #endif //__TESTCOMPONENT_H__
