@@ -1,0 +1,14 @@
+﻿/build64
+/build32
+/build
+/tools
+/bin
+/.vc
+/.vs
+/.vscode
+/Example/fileversion
+/Decompile.bat
+*.epf
+*.o
+*.d
+*.so

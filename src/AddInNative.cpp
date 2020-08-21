@@ -45,7 +45,7 @@ long GetClassObject(const WCHAR_T* wsName, IComponentBase** pInterface)
 {
 	if (*pInterface) return 0;
 	auto cls_name = std::u16string(reinterpret_cast<const char16_t*>(wsName));
-	return long(*pInterface = AddInNative::createObject(cls_name));
+	return long(*pInterface = AddInNative::CreateObject(cls_name));
 }
 
 long DestroyObject(IComponentBase** pInterface)
@@ -55,6 +55,76 @@ long DestroyObject(IComponentBase** pInterface)
 	*pInterface = nullptr;
 	return 0;
 }
+
+#ifdef _WINDOWS
+
+std::string WC2MB(const std::wstring& wstr)
+{
+	DWORD locale = CP_UTF8;
+	if (wstr.empty()) return {};
+	const int sz = WideCharToMultiByte(locale, 0, &wstr[0], (int)wstr.size(), 0, 0, 0, 0);
+	std::string res(sz, 0);
+	WideCharToMultiByte(locale, 0, &wstr[0], (int)wstr.size(), &res[0], sz, 0, 0);
+	return res;
+}
+
+std::wstring MB2WC(const std::string& str)
+{
+	DWORD locale = CP_UTF8;
+	if (str.empty()) return {};
+	const int sz = MultiByteToWideChar(locale, 0, &str[0], (int)str.size(), 0, 0);
+	std::wstring res(sz, 0);
+	MultiByteToWideChar(locale, 0, &str[0], (int)str.size(), &res[0], sz);
+	return res;
+}
+
+#else //_WINDOWS
+
+#include <iconv.h>
+
+std::wstring MB2WC(const std::string& source)
+{
+	std::string tocode = sizeof(wchar_t) == 4 ? "UTF-32" : "UTF-16";
+	iconv_t cd = iconv_open(tocode.c_str(), "UTF-8");
+	if (cd == (iconv_t)-1) return {};
+
+	std::wstring result;
+	result.resize(source.size() + 1);
+
+	char* src = const_cast<char*>(source.data());
+	wchar_t* trg = const_cast<wchar_t*>(result.data());
+
+	size_t succeed = (size_t)-1;
+	size_t f = source.size() * sizeof(char);
+	size_t t = result.size() * sizeof(wchar_t);
+	succeed = iconv(cd, (char**)&src, &f, (char**)&trg, &t);
+	iconv_close(cd);
+	if (succeed == (size_t)-1) return {};
+	return result;
+}
+
+std::string WC2MB(const std::wstring& source)
+{
+	std::string fromcode = sizeof(wchar_t) == 4 ? "UTF-32" : "UTF-16";
+	iconv_t cd = iconv_open("UTF-8", fromcode.c_str());
+	if (cd == (iconv_t)-1) return {};
+
+	std::string result;
+	result.resize(source.size() * sizeof(wchar_t) + 1);
+
+	wchar_t* src = const_cast<wchar_t*>(source.data());
+	char* trg = const_cast<char*>(result.data());
+
+	size_t succeed = (size_t)-1;
+	size_t f = source.size() * sizeof(wchar_t);
+	size_t t = result.size() * sizeof(char);
+	succeed = iconv(cd, (char**)&src, &f, (char**)&trg, &t);
+	iconv_close(cd);
+	if (succeed == (size_t)-1) return {};
+	return result;
+}
+
+#endif //_WINDOWS
 
 std::map<std::u16string, CompFunction> AddInNative::components;
 
@@ -206,10 +276,11 @@ long AddInNative::GetNParams(const long lMethodNum)
 bool AddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue)
 {
 	try {
+		VA(pvarParamDefValue).clear();
 		auto it = std::next(methods.begin(), lMethodNum);
-		if (it == methods.end()) return false;
+		if (it == methods.end()) return true;
 		auto p = it->defs.find(lParamNum);
-		if (p == it->defs.end()) return false;
+		if (p == it->defs.end()) return true;
 		auto var = &p->second.variant;
 		if (auto value = std::get_if<std::u16string>(var)) {
 			VA(pvarParamDefValue) = *value;
@@ -227,7 +298,7 @@ bool AddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, 
 			VA(pvarParamDefValue) = *value;
 			return true;
 		}
-		return false;
+		return true;
 	}
 	catch (...) {
 		return false;
@@ -376,7 +447,7 @@ void ADDIN_API AddInNative::FreeMemory(void** pMemory) const
 
 std::string AddInNative::WCHAR2MB(std::basic_string_view<WCHAR_T> src)
 {
-	if (sizeof(WCHAR_T) == 2) {
+	if (sizeof(wchar_t) == 2) {
 		static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> cvt_utf8_utf16;
 		return cvt_utf8_utf16.to_bytes(src.data(), src.data() + src.size());
 	}
@@ -388,7 +459,7 @@ std::string AddInNative::WCHAR2MB(std::basic_string_view<WCHAR_T> src)
 }
 
 std::wstring AddInNative::WCHAR2WC(std::basic_string_view<WCHAR_T> src) {
-	if (sizeof(WCHAR_T) == 2) {
+	if (sizeof(wchar_t) == 2) {
 		return std::wstring(src);
 	}
 	else {
@@ -399,7 +470,7 @@ std::wstring AddInNative::WCHAR2WC(std::basic_string_view<WCHAR_T> src) {
 }
 
 std::u16string AddInNative::MB2WCHAR(std::string_view src) {
-	if (sizeof(WCHAR_T) == 2) {
+	if (sizeof(wchar_t) == 2) {
 		static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> cvt_utf8_utf16;
 		std::wstring tmp = cvt_utf8_utf16.from_bytes(src.data(), src.data() + src.size());
 		return std::u16string(reinterpret_cast<const char16_t*>(tmp.data()), tmp.size());
@@ -422,6 +493,20 @@ std::wstring AddInNative::upper(std::wstring& str)
 	return str;
 }
 
+uint32_t AddInNative::VarinantHelper::size()
+{
+	if (pvar == nullptr) throw std::bad_variant_access();
+	if (pvar->vt != VTYPE_BLOB) throw std::bad_typeid();
+	return pvar->strLen;
+}
+
+char* AddInNative::VarinantHelper::data()
+{
+	if (pvar == nullptr) throw std::bad_variant_access();
+	if (pvar->vt != VTYPE_BLOB) throw std::bad_typeid();
+	return pvar->pstrVal;
+}
+
 AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator=(const std::string& str)
 {
 	return operator=(AddInNative::MB2WCHAR(str));
@@ -429,7 +514,7 @@ AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator=(const std::s
 
 AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator=(const std::wstring& str)
 {
-	if (sizeof(WCHAR_T) == 2) {
+	if (sizeof(wchar_t) == 2) {
 		return operator=(std::u16string(reinterpret_cast<const char16_t*>(str.data()), str.size()));
 	}
 	else {

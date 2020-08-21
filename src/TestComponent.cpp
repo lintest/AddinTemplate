@@ -23,11 +23,11 @@ TestComponent::TestComponent()
 std::u16string TestComponent::getTestString()
 {
 	time_t rawtime;
-	struct tm* timeinfo;
+	struct tm timeinfo;
 	char buffer[255];
 	time(&rawtime);
-	timeinfo = localtime(&rawtime);
-	strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", timeinfo);
+	localtime_s(&timeinfo, &rawtime);
+	strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", &timeinfo);
 	return text + MB2WCHAR(buffer);
 }
 

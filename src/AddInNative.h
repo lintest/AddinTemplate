@@ -17,28 +17,30 @@
 
 class AddInNative;
 
-using CompFunction = std::function<AddInNative* ()>;
-
 class DefaultHelper {
+private:
+	class EmptyValue {};
 public:
 	std::variant<
-		std::monostate,
+		EmptyValue,
 		std::u16string,
 		int32_t,
 		double,
 		bool
 	> variant;
 public:
-	DefaultHelper() : variant(std::monostate()) {}
+	DefaultHelper() : variant(EmptyValue()) {}
 	DefaultHelper(const std::u16string& s) : variant(s) {}
 	DefaultHelper(int32_t value) : variant(value) {}
 	DefaultHelper(double value) : variant(value) {}
 	DefaultHelper(bool value) : variant(value) {}
 	DefaultHelper(const char16_t* value) {
 		if (value) variant = std::u16string(value);
-		else variant = std::monostate();
+		else variant = EmptyValue();
 	}
 };
+
+using CompFunction = std::function<AddInNative* ()>;
 
 class AddInNative : public IComponentBase
 {
@@ -64,11 +66,13 @@ protected:
 		operator int32_t() const;
 		operator double() const;
 		operator bool() const;
+		uint32_t size();
+		char* data();
 		void clear();
 	};
 
 	using VH = VarinantHelper;
-	using MethDefaults = std::map<int, DefaultHelper>;
+	using MethDefaults = std::map<long, DefaultHelper>;
 	using PropFunction = std::function<void(VH)>;
 	using MethFunction0 = std::function<void()>;
 	using MethFunction1 = std::function<void(VH)>;
@@ -90,8 +94,6 @@ protected:
 		MethFunction7
 	>;
 
-	bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) const;
-	void ADDIN_API FreeMemory(void** pMemory) const;
 	void AddProperty(const std::u16string& nameEn, const std::u16string& nameRu, PropFunction getter, PropFunction setter = nullptr);
 	void AddProcedure(const std::u16string& nameEn, const std::u16string& nameRu, MethFunction handler, MethDefaults defs = {});
 	void AddFunction(const std::u16string& nameEn, const std::u16string& nameRu, MethFunction handler, MethDefaults defs = {});
@@ -121,43 +123,47 @@ private:
 
 	bool CallMethod(MethFunction* function, tVariant* paParams, const long lSizeArray);
 	VarinantHelper VA(tVariant* pvar) { return VarinantHelper(pvar, this); }
+	bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) const;
+	void ADDIN_API FreeMemory(void** pMemory) const;
+
+	friend const WCHAR_T* GetClassNames();
+	static std::u16string AddInNative::getComponentNames();
+	friend long GetClassObject(const WCHAR_T*, IComponentBase**);
+	static AddInNative* CreateObject(const std::u16string& name);
+
 	static std::map<std::u16string, CompFunction> components;
 	std::vector<Prop> properties;
 	std::vector<Meth> methods;
 	std::u16string name;
 
 public:
-	static std::u16string AddInNative::getComponentNames();
-	static AddInNative* createObject(const std::u16string& name);
-
-public:
 	AddInNative(void) : result(nullptr, this) {}
 	virtual ~AddInNative() {}
 	// IInitDoneBase
-	virtual bool ADDIN_API Init(void*);
-	virtual bool ADDIN_API setMemManager(void* mem);
-	virtual long ADDIN_API GetInfo();
-	virtual void ADDIN_API Done();
+	virtual bool ADDIN_API Init(void*) override final;
+	virtual bool ADDIN_API setMemManager(void* mem) override final;
+	virtual long ADDIN_API GetInfo() override final;
+	virtual void ADDIN_API Done() override final;
 	// ILanguageExtenderBase
-	virtual bool ADDIN_API RegisterExtensionAs(WCHAR_T** wsLanguageExt);
-	virtual long ADDIN_API GetNProps();
-	virtual long ADDIN_API FindProp(const WCHAR_T* wsPropName);
-	virtual const WCHAR_T* ADDIN_API GetPropName(long lPropNum, long lPropAlias);
-	virtual bool ADDIN_API GetPropVal(const long lPropNum, tVariant* pvarPropVal);
-	virtual bool ADDIN_API SetPropVal(const long lPropNum, tVariant* pvarPropVal);
-	virtual bool ADDIN_API IsPropReadable(const long lPropNum);
-	virtual bool ADDIN_API IsPropWritable(const long lPropNum);
-	virtual long ADDIN_API GetNMethods();
-	virtual long ADDIN_API FindMethod(const WCHAR_T* wsMethodName);
-	virtual const WCHAR_T* ADDIN_API GetMethodName(const long lMethodNum, const long lMethodAlias);
-	virtual long ADDIN_API GetNParams(const long lMethodNum);
-	virtual bool ADDIN_API GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue);
-	virtual bool ADDIN_API HasRetVal(const long lMethodNum);
-	virtual bool ADDIN_API CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray);
-	virtual bool ADDIN_API CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
-	operator IComponentBase* () { return (IComponentBase*)this; }
+	virtual bool ADDIN_API RegisterExtensionAs(WCHAR_T** wsLanguageExt) override final;
+	virtual long ADDIN_API GetNProps() override final;
+	virtual long ADDIN_API FindProp(const WCHAR_T* wsPropName) override final;
+	virtual const WCHAR_T* ADDIN_API GetPropName(long lPropNum, long lPropAlias) override final;
+	virtual bool ADDIN_API GetPropVal(const long lPropNum, tVariant* pvarPropVal) override final;
+	virtual bool ADDIN_API SetPropVal(const long lPropNum, tVariant* pvarPropVal) override final;
+	virtual bool ADDIN_API IsPropReadable(const long lPropNum) override final;
+	virtual bool ADDIN_API IsPropWritable(const long lPropNum) override final;
+	virtual long ADDIN_API GetNMethods() override final;
+	virtual long ADDIN_API FindMethod(const WCHAR_T* wsMethodName) override final;
+	virtual const WCHAR_T* ADDIN_API GetMethodName(const long lMethodNum, const long lMethodAlias) override final;
+	virtual long ADDIN_API GetNParams(const long lMethodNum) override final;
+	virtual bool ADDIN_API GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue) override final;
+	virtual bool ADDIN_API HasRetVal(const long lMethodNum) override final;
+	virtual bool ADDIN_API CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray) override final;
+	virtual bool ADDIN_API CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray) override final;
+	operator IComponentBase* () { return (IComponentBase*)this; };
 	// LocaleBase
-	virtual void ADDIN_API SetLocale(const WCHAR_T* loc);
+	virtual void ADDIN_API SetLocale(const WCHAR_T* loc) override final;
 private:
 	IMemoryManager* m_iMemory = nullptr;
 	IAddInDefBase* m_iConnect = nullptr;

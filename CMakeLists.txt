@@ -10,7 +10,6 @@ add_library(${TARGET} SHARED
         src/AddInNative.h
         src/TestComponent.cpp
         src/TestComponent.h
-        src/stdafx.cpp
         src/stdafx.h)
 
 target_compile_definitions(${TARGET} PRIVATE UNICODE _UNICODE)
