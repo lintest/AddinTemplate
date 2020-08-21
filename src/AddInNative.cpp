@@ -412,7 +412,7 @@ std::u16string AddInNative::AddComponent(const std::u16string& name, CompFunctio
 	return name;
 }
 
-AddInNative* AddInNative::createObject(const std::u16string& name) {
+AddInNative* AddInNative::CreateObject(const std::u16string& name) {
 	auto it = components.find(name);
 	if (it == components.end()) return nullptr;
 	AddInNative* object = it->second();
