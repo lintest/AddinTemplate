@@ -50,6 +50,7 @@ protected:
 		tVariant* pvar = nullptr;
 		AddInNative* addin = nullptr;
 	public:
+		void AllocMemory(unsigned long size);
 		VarinantHelper(const VarinantHelper& va) :pvar(va.pvar), addin(va.addin) {}
 		VarinantHelper(tVariant* pvar, AddInNative* addin) :pvar(pvar), addin(addin) {}
 		VarinantHelper& operator<<(const VarinantHelper& va) { pvar = va.pvar; addin = va.addin; return *this; }

@@ -624,6 +624,14 @@ AddInNative::VarinantHelper::operator bool() const
 	return TV_BOOL(pvar);
 }
 
+void AddInNative::VarinantHelper::AllocMemory(unsigned long size)
+{
+	clear();
+	if (!addin->AllocMemory((void**)&pvar->pstrVal, size)) throw std::bad_alloc();
+	TV_VT(pvar) = VTYPE_BLOB;
+	pvar->strLen = size;
+}
+
 WCHAR_T* AddInNative::W(const char16_t* str) const
 {
 	WCHAR_T* res = NULL;
@@ -633,3 +641,4 @@ WCHAR_T* AddInNative::W(const char16_t* str) const
 	memcpy(res, str, size);
 	return res;
 }
+
