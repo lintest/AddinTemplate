@@ -1,0 +1,41 @@
+version: 0.2.{build}
+
+os: Visual Studio 2019
+
+configuration:
+  - Release
+
+platform:
+  - x64  
+
+install:
+
+init:
+  - cmd: cmake --version
+  - cmd: msbuild /version
+
+before_build:
+  - echo Running cmake...
+  - cmd: cd c:\projects\GitFor1C
+
+build_script:
+  - cmd: mkdir build32Win
+  - cmd: cd build32Win
+  - cmd: cmake .. -A Win32 -DMySuffix2=32
+  - cmd: cmake --build . --config Release
+  - cmd: cd ..
+  - cmd: mkdir build64Win
+  - cmd: cd build64Win
+  - cmd: cmake .. -A x64 -DMySuffix2=64
+  - cmd: cmake --build . --config Release
+  - cmd: cd ..
+  - cmd: copy build32Win\Release\libNativeAddInWin32.dll .
+  - cmd: copy build64Win\Release\libNativeAddInWin64.dll .
+
+after_build:
+  - ps: 7z a NativeAddIn.zip libNativeAddInWin32.dll
+  - ps: 7z a NativeAddIn.zip libNativeAddInWin64.dll
+
+artifacts:
+  - path: NativeAddIn.zip
+    name: NativeAddIn
