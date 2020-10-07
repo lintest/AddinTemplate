@@ -12,6 +12,11 @@ TestComponent::TestComponent()
 		[&](VH var) { this->setTestString(var); }
 	);
 
+	AddProperty(u"Number", u"Число",
+		[&](VH var) { var = this->value; },
+		[&](VH var) { this->value = var; }
+	);
+
 	AddFunction(u"GetText", u"ПолучитьТекст", [&]() { this->result = this->getTestString(); });
 
 	AddProcedure(u"SetText", u"УстановитьТекст", [&](VH par) { this->setTestString(par); }, { {0, u"default: "} });

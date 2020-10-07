@@ -9,6 +9,7 @@ class TestComponent:
 private:
     static std::vector<std::u16string> names;
     TestComponent();
+    int64_t value;
 private:
     std::u16string text;
     std::u16string getTestString();
