@@ -17,9 +17,9 @@ install:
 init:
   - cmd: cmake --version
   - cmd: msbuild /version
+  - cmd: 
 
 before_build:
-  - echo Running cmake...
   - cmd: echo %APPVEYOR_BUILD_VERSION% > "version.txt"
   - sh: echo ${APPVEYOR_BUILD_VERSION} > "version.txt"
   - sh: echo "#define VERSION_FULL " ${APPVEYOR_BUILD_VERSION} > "version.h"

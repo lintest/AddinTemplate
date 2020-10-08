@@ -25,28 +25,28 @@ $writer.WriteStartElement('component')
 $writer.WriteAttributeString('type', 'native')
 $writer.WriteAttributeString('os', 'Windows')
 $writer.WriteAttributeString('arch', 'i386')
-$writer.WriteAttributeString('path', $project + 'Win32' + $postfix + '.dll')
+$writer.WriteAttributeString('path', "${project}Win32${postfix}.dll")
 $writer.WriteEndElement();
 
 $writer.WriteStartElement('component')
 $writer.WriteAttributeString('type', 'native')
 $writer.WriteAttributeString('os', 'Windows')
 $writer.WriteAttributeString('arch', 'x86_64')
-$writer.WriteAttributeString('path', $project + 'Win64' + $postfix + '.dll')
+$writer.WriteAttributeString('path', "${project}Win64${postfix}.dll")
 $writer.WriteEndElement();
 
 $writer.WriteStartElement('component')
 $writer.WriteAttributeString('type', 'native')
 $writer.WriteAttributeString('os', 'Linux')
 $writer.WriteAttributeString('arch', 'i386')
-$writer.WriteAttributeString('path', $project + 'Lin32' + $postfix + '.so')
+$writer.WriteAttributeString('path', "${project}Lin32${postfix}.so")
 $writer.WriteEndElement();
 
 $writer.WriteStartElement('component')
 $writer.WriteAttributeString('type', 'native')
 $writer.WriteAttributeString('os', 'Linux')
 $writer.WriteAttributeString('arch', 'x86_64')
-$writer.WriteAttributeString('path', $project + 'Lin64' + $postfix + '.so')
+$writer.WriteAttributeString('path', "${project}Lin64${postfix}.so")
 $writer.WriteEndElement();
 
 $writer.WriteEndElement();
