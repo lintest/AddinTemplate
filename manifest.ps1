@@ -5,7 +5,8 @@ Param (
 
 $postfix = '_' + $version -replace '\.','_'
 $v1,$v2,$v3,$v4 = $version.split('.')
-Set-Content 'version.h' "#define VERSION_MAJOR     $v1"
+Set-Content 'version.h' "#define VERSION_FULL $version"
+Add-Content 'version.h' "#define VERSION_MAJOR     $v1"
 Add-Content 'version.h' "#define VERSION_MINOR     $v2"
 Add-Content 'version.h' "#define VERSION_REVISION  $v3"
 Add-Content 'version.h' "#define VERSION_BUILD     $v4"

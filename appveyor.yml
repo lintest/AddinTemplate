@@ -22,6 +22,7 @@ before_build:
   - echo Running cmake...
   - cmd: echo %APPVEYOR_BUILD_VERSION% > "version.txt"
   - sh: echo ${APPVEYOR_BUILD_VERSION} > "version.txt"
+  - sh: echo "#define VERSION_FULL " ${APPVEYOR_BUILD_VERSION} > "version.h"
 
 build_script:
   - cmd: Powershell.exe -File manifest.ps1 -Project NativeAddIn -Version %APPVEYOR_BUILD_VERSION%
@@ -51,8 +52,8 @@ build_script:
   - sh: cp bin/libNativeAddInLin??.so .
 
 after_build:
-  - cmd: 7z a NativeAddIn.zip libNativeAddInWin??.dll version.txt manifest.xml
-  - sh: 7z a NativeAddIn.zip libNativeAddInLin??.so version.txt
+  - cmd: 7z a NativeAddIn.zip libNativeAddInWin??.dll manifest.xml version.txt version.h
+  - sh: 7z a NativeAddIn.zip libNativeAddInLin??.so version.txt version.h
 
 artifacts:
   - path: NativeAddIn.zip
