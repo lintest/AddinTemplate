@@ -1,23 +1,31 @@
-version: 0.3.1.{build}
+version: 0.3.2.{build}
+
+branches:
+  only:
+    - develop
+
+skip_branch_with_pr: true
 
 image:
   - Visual Studio 2019
-  - Ubuntu2004
+  - Ubuntu1804
 
 configuration:
   - Release
 
 platform:
-  - x64  
+  - x64
 
 install:
-  - sh: sudo apt update
-  - sh: sudo apt install -y uuid-dev
+  - sh: sudo dpkg --add-architecture i386
+  - sh: sudo apt -qq update
+  - sh: sudo apt -qq -y install uuid-dev
+  - sh: sudo apt -qq -y install gcc-multilib g++-multilib
 
 init:
   - cmd: cmake --version
   - cmd: msbuild /version
-  - cmd: 
+  - cmd: echo.
 
 before_build:
   - cmd: echo %APPVEYOR_BUILD_VERSION% > "version.txt"

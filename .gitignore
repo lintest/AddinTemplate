@@ -1,5 +1,9 @@
 ﻿/build64Win
 /build32Win
+/build64Lin
+/build32Lin
+/build64
+/build32
 /build
 /tools
 /bin
@@ -7,6 +11,7 @@
 /.vs
 /.vscode
 /Example/fileversion
+/Example/Templates/AddinNative/Ext/Template.bin
 /Decompile.bat
 manifest.xml
 *.epf
