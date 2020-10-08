@@ -8,6 +8,8 @@
 /.vscode
 /Example/fileversion
 /Decompile.bat
+/version.h
+manifest.xml
 *.epf
 *.o
 *.d

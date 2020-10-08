@@ -1,4 +1,4 @@
-version: 0.2.{build}
+version: 0.3.1.{build}
 
 image:
   - Visual Studio 2019
@@ -20,8 +20,12 @@ init:
 
 before_build:
   - echo Running cmake...
+  - cmd: echo %APPVEYOR_BUILD_VERSION% > "version.txt"
+  - sh: echo ${APPVEYOR_BUILD_VERSION} > "version.txt"
 
 build_script:
+  - cmd: Powershell.exe -File manifest.ps1 -Project NativeAddIn -Version %APPVEYOR_BUILD_VERSION%
+
   - cmd: mkdir build32
   - cmd: cd build32
   - cmd: cmake .. -A Win32 -DMySuffix2=32
@@ -47,8 +51,8 @@ build_script:
   - sh: cp bin/libNativeAddInLin??.so .
 
 after_build:
-  - cmd: 7z a NativeAddIn.zip libNativeAddInWin??.dll
-  - sh: 7z a NativeAddIn.zip libNativeAddInLin??.so
+  - cmd: 7z a NativeAddIn.zip libNativeAddInWin??.dll version.txt manifest.xml
+  - sh: 7z a NativeAddIn.zip libNativeAddInLin??.so version.txt
 
 artifacts:
   - path: NativeAddIn.zip
