@@ -1,6 +1,8 @@
 version: 0.2.{build}
 
-os: Visual Studio 2019
+image:
+  - Visual Studio 2019
+  - Ubuntu2004
 
 configuration:
   - Release
@@ -9,6 +11,8 @@ platform:
   - x64  
 
 install:
+  - sh: sudo apt update
+  - sh: sudo apt install -y uuid-dev
 
 init:
   - cmd: cmake --version
@@ -16,25 +20,35 @@ init:
 
 before_build:
   - echo Running cmake...
-  - cmd: cd c:\projects\GitFor1C
 
 build_script:
-  - cmd: mkdir build32Win
-  - cmd: cd build32Win
+  - cmd: mkdir build32
+  - cmd: cd build32
   - cmd: cmake .. -A Win32 -DMySuffix2=32
   - cmd: cmake --build . --config Release
   - cmd: cd ..
-  - cmd: mkdir build64Win
-  - cmd: cd build64Win
+  - cmd: mkdir build64
+  - cmd: cd build64
   - cmd: cmake .. -A x64 -DMySuffix2=64
   - cmd: cmake --build . --config Release
   - cmd: cd ..
-  - cmd: copy build32Win\Release\libNativeAddInWin32.dll .
-  - cmd: copy build64Win\Release\libNativeAddInWin64.dll .
+  - cmd: copy bin\Release\libNativeAddInWin??.dll .
+
+  - sh: mkdir build32
+  - sh: cd build32
+  - sh: cmake -D CMAKE_BUILD_TYPE:STRING=Release -D TARGET_PLATFORM_32:BOOL=ON --build ..
+  - sh: cmake --build .
+  - sh: cd ..
+  - sh: mkdir build64
+  - sh: cd build64
+  - sh: cmake -D CMAKE_BUILD_TYPE:STRING=Release -D TARGET_PLATFORM_32:BOOL=OFF --build ..
+  - sh: cmake --build .
+  - sh: cd ..
+  - sh: cp bin/libNativeAddInLin??.so .
 
 after_build:
-  - ps: 7z a NativeAddIn.zip libNativeAddInWin32.dll
-  - ps: 7z a NativeAddIn.zip libNativeAddInWin64.dll
+  - cmd: 7z a NativeAddIn.zip libNativeAddInWin??.dll
+  - sh: 7z a NativeAddIn.zip libNativeAddInLin??.so
 
 artifacts:
   - path: NativeAddIn.zip
