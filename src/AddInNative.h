@@ -44,16 +44,26 @@ using CompFunction = std::function<AddInNative* ()>;
 
 class AddInNative : public IComponentBase
 {
+private:
+	struct Prop;
+	struct Meth;
 protected:
 	class VarinantHelper {
 	private:
 		tVariant* pvar = nullptr;
 		AddInNative* addin = nullptr;
+		Prop* prop = nullptr;
+		Meth* meth = nullptr;
+		long number = -1;
+	private:
+		std::exception error(TYPEVAR vt) const;
 	public:
 		void AllocMemory(unsigned long size);
-		VarinantHelper(const VarinantHelper& va) :pvar(va.pvar), addin(va.addin) {}
+		VarinantHelper(const VarinantHelper& va) :pvar(va.pvar), addin(va.addin), prop(va.prop), meth(va.meth), number(va.number) {}
 		VarinantHelper(tVariant* pvar, AddInNative* addin) :pvar(pvar), addin(addin) {}
-		VarinantHelper& operator<<(const VarinantHelper& va) { pvar = va.pvar; addin = va.addin; return *this; }
+		VarinantHelper(tVariant* pvar, AddInNative* addin, Prop* prop) :pvar(pvar), addin(addin), prop(prop) {}
+		VarinantHelper(tVariant* pvar, AddInNative* addin, Meth* meth, long number) :pvar(pvar), addin(addin), meth(meth), number(number) {}
+		VarinantHelper& operator<<(const VarinantHelper& va) { pvar = va.pvar; addin = va.addin; prop = va.prop, meth = va.meth, number = va.number; return *this; }
 		VarinantHelper& operator=(const VarinantHelper& va) = delete;
 		VarinantHelper& operator=(const std::string& str);
 		VarinantHelper& operator=(const std::wstring& str);
@@ -102,8 +112,8 @@ protected:
 	static std::u16string AddComponent(const std::u16string& name, CompFunction creator);
 	VarinantHelper result;
 
-	static std::u16string AddInNative::upper(std::u16string& str);
-	static std::wstring AddInNative::upper(std::wstring& str);
+	static std::u16string upper(std::u16string& str);
+	static std::wstring upper(std::wstring& str);
 	static std::string WCHAR2MB(std::basic_string_view<WCHAR_T> src);
 	static std::wstring WCHAR2WC(std::basic_string_view<WCHAR_T> src);
 	static std::u16string MB2WCHAR(std::string_view src);
@@ -123,13 +133,16 @@ private:
 		bool hasRetVal;
 	};
 
-	bool CallMethod(MethFunction* function, tVariant* paParams, const long lSizeArray);
+	bool CallMethod(MethFunction* function, tVariant* paParams, Meth* meth, const long lSizeArray);
 	VarinantHelper VA(tVariant* pvar) { return VarinantHelper(pvar, this); }
+	VarinantHelper VA(tVariant* pvar, Prop* prop) { return VarinantHelper(pvar, this, prop); }
+	VarinantHelper VA(tVariant* pvar, Meth* meth, long number) { return VarinantHelper(pvar + number, this, meth, number); }
 	bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) const;
 	void ADDIN_API FreeMemory(void** pMemory) const;
+	bool AddError(const std::u16string& descr, long scode = 0);
 
 	friend const WCHAR_T* GetClassNames();
-	static std::u16string AddInNative::getComponentNames();
+	static std::u16string getComponentNames();
 	friend long GetClassObject(const WCHAR_T*, IComponentBase**);
 	static AddInNative* CreateObject(const std::u16string& name);
 
@@ -137,6 +150,7 @@ private:
 	std::vector<Prop> properties;
 	std::vector<Meth> methods;
 	std::u16string name;
+	bool alias;
 
 public:
 	AddInNative(void) : result(nullptr, this) {}

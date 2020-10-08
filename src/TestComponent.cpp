@@ -7,19 +7,19 @@ std::vector<std::u16string> TestComponent::names = {
 
 TestComponent::TestComponent()
 {
-	AddProperty(u"Text", u"Текст",
+	AddProperty(
+		u"Text", u"Текст",
 		[&](VH var) { var = this->getTestString(); },
-		[&](VH var) { this->setTestString(var); }
-	);
+		[&](VH var) { this->setTestString(var); });
 
-	AddProperty(u"Number", u"Число",
+	AddProperty(
+		u"Number", u"Число",
 		[&](VH var) { var = this->value; },
-		[&](VH var) { this->value = var; }
-	);
+		[&](VH var) { this->value = var; });
 
 	AddFunction(u"GetText", u"ПолучитьТекст", [&]() { this->result = this->getTestString(); });
 
-	AddProcedure(u"SetText", u"УстановитьТекст", [&](VH par) { this->setTestString(par); }, { {0, u"default: "} });
+	AddProcedure(u"SetText", u"УстановитьТекст", [&](VH par) { this->setTestString(par); }, {{0, u"default: "}});
 }
 
 #include <iostream>
@@ -28,16 +28,15 @@ TestComponent::TestComponent()
 std::u16string TestComponent::getTestString()
 {
 	time_t rawtime;
-	struct tm timeinfo;
+	struct tm *timeinfo;
 	char buffer[255];
 	time(&rawtime);
-	localtime_s(&timeinfo, &rawtime);
-	strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", &timeinfo);
+	timeinfo = localtime(&rawtime);
+	strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", timeinfo);
 	return text + MB2WCHAR(buffer);
 }
 
-void TestComponent::setTestString(const std::u16string& text)
+void TestComponent::setTestString(const std::u16string &text)
 {
 	this->text = text;
 }
-
