@@ -6,6 +6,7 @@ add_library(${TARGET} SHARED
 		src/AddInNative.cpp
 		src/AddInNative.def
 		src/AddInNative.h
+		src/AddInNative.rc
 		src/TestComponent.cpp
 		src/TestComponent.h
 		src/stdafx.h)

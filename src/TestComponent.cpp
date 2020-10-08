@@ -8,6 +8,10 @@ std::vector<std::u16string> TestComponent::names = {
 TestComponent::TestComponent()
 {
 	AddProperty(
+		u"Version", u"Версия",
+		[&](VH var) { var = this->version(); });
+
+	AddProperty(
 		u"Text", u"Текст",
 		[&](VH var) { var = this->getTestString(); },
 		[&](VH var) { this->setTestString(var); });
