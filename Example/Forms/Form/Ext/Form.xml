@@ -7,6 +7,11 @@
 				<CommandName>Form.Command.ТестКомпоненты</CommandName>
 				<ExtendedTooltip name="ТестКомпонентыРасширеннаяПодсказка" id="2"/>
 			</Button>
+			<Button name="ФормаАвтотест" id="15">
+				<Type>CommandBarButton</Type>
+				<CommandName>Form.Command.Автотест</CommandName>
+				<ExtendedTooltip name="ФормаАвтотестРасширеннаяПодсказка" id="16"/>
+			</Button>
 		</ChildItems>
 	</AutoCommandBar>
 	<Events>
@@ -109,6 +114,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ТестКомпоненты</Action>
+		</Command>
+		<Command name="Автотест" id="2">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Автотест</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Автотест</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>Автотест</Action>
 		</Command>
 	</Commands>
 </Form>

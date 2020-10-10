@@ -10,6 +10,7 @@
 /.vc
 /.vs
 /.vscode
+/Autotest.log
 /Example/fileversion
 /Example/Templates/NativeAddIn/Ext/Template.bin
 /Decompile.bat

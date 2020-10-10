@@ -20,11 +20,12 @@
 				</v8:item>
 			</Synonym>
 			<Comment/>
-			<DefaultForm>ExternalDataProcessor.Example.Form.Форма</DefaultForm>
+			<DefaultForm>ExternalDataProcessor.Example.Form.Form</DefaultForm>
 			<AuxiliaryForm/>
 		</Properties>
 		<ChildObjects>
-			<Form>Форма</Form>
+			<Form>Form</Form>
+			<Form>Test</Form>
 			<Template>NativeAddIn</Template>
 		</ChildObjects>
 	</ExternalDataProcessor>

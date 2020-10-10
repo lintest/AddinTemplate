@@ -58,5 +58,9 @@ if (!(Test-Path $dist1c)) {
   Invoke-WebRequest -Uri $url1c -OutFile $dist1c
 }
 Expand-Archive -Force -Path $dist1c -DestinationPath $path
+Set-Content "$path\bin\conf\conf.cfg" "DisableUnsafeActionProtection=.*;"
 
-& "bin\1cv8t.exe" DESIGNER /F "$path\Data" /LoadExternalDataProcessorOrReportFromFiles "Example.xml" "$name.epf"  /Out"Log.log"
+& "bin\1cv8t.exe" DESIGNER /F "$path\Data" /LoadExternalDataProcessorOrReportFromFiles "Example.xml" "$name.epf"  /Out"Example.log"
+
+Write-Host "Process autotest..."
+#Start-Process "bin\1cv8ct.exe" -ArgumentList "/F $path\Autobase" -Wait

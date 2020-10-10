@@ -27,6 +27,12 @@ artifacts:
   - path: NativeAddIn.epf
     name: NativeAddIn
 
+  - path: example.log
+    name: example log
+
+  - path: "*_screenshot_*.png"
+    name: Screenshots
+
 deploy:
   - provider: GitHub
     auth_token:
