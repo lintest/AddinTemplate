@@ -35,28 +35,21 @@ before_build:
 build_script:
   - cmd: Powershell.exe -File manifest.ps1 -Project NativeAddIn -Version %APPVEYOR_BUILD_VERSION%
 
-  - cmd: mkdir build32
-  - cmd: cd build32
-  - cmd: cmake .. -A Win32 -DMySuffix2=32
-  - cmd: cmake --build . --config Release
-  - cmd: cd ..
-  - cmd: mkdir build64
-  - cmd: cd build64
-  - cmd: cmake .. -A x64 -DMySuffix2=64
-  - cmd: cmake --build . --config Release
-  - cmd: cd ..
-  - cmd: copy bin\Release\libNativeAddInWin??.dll .
-
-  - sh: mkdir build32
-  - sh: cd build32
+  - mkdir build32
+  - cd build32
   - sh: cmake -D CMAKE_BUILD_TYPE:STRING=Release -D TARGET_PLATFORM_32:BOOL=ON --build ..
-  - sh: cmake --build .
-  - sh: cd ..
-  - sh: mkdir build64
-  - sh: cd build64
+  - cmd: cmake .. -A Win32 -DMySuffix2=32
+  - cmake --build . --config Release
+  - cd ..
+
+  - mkdir build64
+  - cd build64
   - sh: cmake -D CMAKE_BUILD_TYPE:STRING=Release -D TARGET_PLATFORM_32:BOOL=OFF --build ..
-  - sh: cmake --build .
-  - sh: cd ..
+  - cmd: cmake .. -A x64 -DMySuffix2=64
+  - cmake --build . --config Release
+  - cd ..
+
+  - cmd: copy bin\Release\libNativeAddInWin??.dll .
   - sh: cp bin/libNativeAddInLin??.so .
 
 after_build:
