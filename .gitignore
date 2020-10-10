@@ -11,7 +11,7 @@
 /.vs
 /.vscode
 /Example/fileversion
-/Example/Templates/AddinNative/Ext/Template.bin
+/Example/Templates/NativeAddIn/Ext/Template.bin
 /Decompile.bat
 manifest.xml
 *.epf
