@@ -8,8 +8,6 @@ $url1c = $env:URL_1CV8T
 $path = $env:APPVEYOR_BUILD_FOLDER
 $version = $env:APPVEYOR_BUILD_VERSION
 $postfix = '_' + $version -replace '\.', '_'
-Update-AppveyorBuild -Version "$version"
-Write-Output "Version: $version"
 
 $apiUrl = 'https://ci.appveyor.com/api'
 $headers = @{
