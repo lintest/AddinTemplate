@@ -77,6 +77,7 @@ protected:
 		operator int64_t() const;
 		operator double() const;
 		operator bool() const;
+		operator int() const;
 		uint32_t size();
 		TYPEVAR type();
 		char* data();
@@ -154,7 +155,7 @@ private:
 	bool alias = false;
 
 public:
-	AddInNative(void) : result(nullptr, this) {}
+	AddInNative(void) ;
 	virtual ~AddInNative() {}
 	// IInitDoneBase
 	virtual bool ADDIN_API Init(void*) override final;
